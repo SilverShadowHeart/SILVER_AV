@@ -1,5 +1,7 @@
+// File: frontend/script.js
+
 // ==============================================================================
-// DOM ELEMENT SELECTION
+// DOM Element References & Global State
 // ==============================================================================
 const dropArea = document.getElementById('drop-area');
 const fileInput = document.getElementById('file-input');
@@ -7,63 +9,59 @@ const fileLabel = document.getElementById('file-label');
 const fileNameDisplay = document.getElementById('file-name');
 const optionsPanel = document.getElementById('options-panel');
 const runAnalysisBtn = document.getElementById('run-analysis-btn');
-const controlPanel = document.getElementById('control-panel');
 const spinner = document.getElementById('spinner');
-const resultsArea = document.getElementById('results-area');
-const queryArea = document.getElementById('query-area');
+const initialSetupContainer = document.getElementById('initial-setup-container');
+const workspace = document.getElementById('workspace');
+const dashboardGrid = document.getElementById('dashboard-grid');
+const plotModalOverlay = document.getElementById('plot-modal-overlay');
+const kpiModalOverlay = document.getElementById('kpi-modal-overlay');
 
-// ==============================================================================
-// GLOBAL STATE
-// ==============================================================================
 let state = {
     file: null,
     mode: null,
     target: null,
-    columns: []
+    column_details: null,
+    all_columns: [],
+    dimensions: [],
+    measures: []
 };
 
 // ==============================================================================
-// EVENT LISTENERS
+// Event Listeners
 // ==============================================================================
-document.addEventListener('DOMContentLoaded', initialize);
-
-function initialize() {
-    // Drag and Drop listeners
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, preventDefaults));
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial Setup Screen Listeners
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, (ev) => { ev.preventDefault(); ev.stopPropagation(); }));
     ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add('highlight')));
     ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove('highlight')));
-    dropArea.addEventListener('drop', handleDrop);
-    
-    // Click listener
+    dropArea.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
     fileInput.addEventListener('change', e => handleFiles(e.target.files));
     runAnalysisBtn.addEventListener('click', runAnalysis);
-}
 
-function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+    // Workspace & Modal Listeners
+    document.getElementById('add-plot-btn').addEventListener('click', openPlotModal);
+    document.getElementById('create-plot-btn').addEventListener('click', addPlotToDashboard);
+    document.getElementById('plot-type-select').addEventListener('change', renderPlotOptions);
+    document.getElementById('add-kpi-btn').addEventListener('click', openKpiModal);
+    document.getElementById('create-kpi-btn').addEventListener('click', addKpiCardToDashboard);
+});
 
 // ==============================================================================
-// UI CONTROL FUNCTIONS
+// Initial Setup & Analysis Trigger
 // ==============================================================================
-
-function handleDrop(e) {
-    handleFiles(e.dataTransfer.files);
-}
-
 function handleFiles(files) {
     if (files.length === 0) return;
     const file = files[0];
-    if (file.type !== "text/csv") {
-        alert("Please upload a CSV file.");
-        return;
-    }
-    
+    if (file.type !== "text/csv") { alert("Please upload a CSV file."); return; }
     state.file = file;
     fileNameDisplay.textContent = `Selected File: ${file.name}`;
-    fileLabel.style.display = 'none'; // Hide the upload label
+    dropArea.style.borderColor = '#1e90ff';
+    fileLabel.innerHTML = `<p><strong>${file.name}</strong> loaded.</p><p style="font-size: 0.9em; color: #888;">Choose an analysis type below.</p>`;
     
     const reader = new FileReader();
     reader.onload = (event) => {
-        state.columns = event.target.result.split('\n')[0].trim().split(',').map(h => h.replace(/"/g, ''));
+        const firstLine = event.target.result.split('\n')[0].trim();
+        state.all_columns = firstLine.split(',').map(h => h.replace(/"/g, ''));
         renderOptionsPanel();
     };
     reader.readAsText(state.file);
@@ -73,38 +71,23 @@ function renderOptionsPanel() {
     optionsPanel.classList.remove('hidden');
     optionsPanel.innerHTML = `
         <h2>2. Choose Analysis Type</h2>
-        <div class="mode-selector">
-            <div class="mode-card" id="mode-supervised" onclick="selectMode('supervised')">
-                <h3>Predictive Analysis</h3>
-                <p>Predict a target and find key drivers.</p>
-            </div>
-            <div class="mode-card" id="mode-unsupervised" onclick="selectMode('unsupervised')">
-                <h3>Exploratory Analysis</h3>
-                <p>Discover hidden groups in your data.</p>
-            </div>
-        </div>
+        <select id="mode-select" onchange="selectMode(this.value)">
+            <option value="">-- Select Mode --</option>
+            <option value="supervised">Predictive Analysis</option>
+            <option value="unsupervised">Exploratory Analysis (Coming Soon)</option>
+        </select>
         <div class="hidden" id="target-selector-div">
             <label for="target-column-select">Select Target to Predict:</label>
             <select id="target-column-select" onchange="selectTarget(this.value)">
                 <option value="">-- Please choose a target --</option>
-                ${state.columns.map(c => `<option value="${c}">${c}</option>`).join('')}
+                ${state.all_columns.map(c => `<option value="${c}">${c}</option>`).join('')}
             </select>
-        </div>
-    `;
+        </div>`;
 }
 
 function selectMode(mode) {
     state.mode = mode;
-    document.getElementById('mode-supervised').classList.toggle('selected', mode === 'supervised');
-    document.getElementById('mode-unsupervised').classList.toggle('selected', mode === 'unsupervised');
     document.getElementById('target-selector-div').classList.toggle('hidden', mode !== 'supervised');
-    
-    if (mode === 'unsupervised') {
-        state.target = 'unsupervised'; // Set a flag to show the button is ready
-    } else {
-        state.target = null; // Reset target if switching back to supervised
-        document.getElementById('target-column-select').value = "";
-    }
     updateRunButtonState();
 }
 
@@ -114,103 +97,207 @@ function selectTarget(target) {
 }
 
 function updateRunButtonState() {
-    const isReady = state.mode && (state.mode === 'unsupervised' || (state.mode === 'supervised' && state.target && state.target !== ""));
+    const isReady = state.file && state.mode === 'supervised' && state.target;
     runAnalysisBtn.classList.toggle('hidden', !isReady);
 }
 
-// ==============================================================================
-// API AND REPORTING FUNCTIONS
-// ==============================================================================
-
 async function runAnalysis() {
-    controlPanel.classList.add('hidden');
+    document.getElementById('control-panel').classList.add('hidden');
     spinner.classList.remove('hidden');
-    resultsArea.innerHTML = '';
-    queryArea.innerHTML = '';
-    queryArea.classList.add('hidden');
-
 
     const formData = new FormData();
     formData.append('file', state.file);
     formData.append('mode', state.mode);
-    if (state.mode === 'supervised') {
-        formData.append('target_column', state.target);
-    }
+    formData.append('target_column', state.target);
 
     try {
         const response = await fetch('http://127.0.0.1:8000/analyze', { method: 'POST', body: formData });
         const result = await response.json();
-        if (!response.ok) throw new Error(result.detail || 'Analysis failed on the server.');
+        if (!response.ok) throw new Error(result.detail || 'Analysis failed.');
         
-        if (result.problem_type) {
-            renderSupervisedReport(result);
-            renderQueryInterface();
-        } else if (result.optimal_k) {
-            renderUnsupervisedReport(result);
-        }
+        // Store all state returned from the backend
+        state.column_details = result.column_details;
+        state.dimensions = Object.keys(result.column_details).filter(k => result.column_details[k].type !== 'numeric');
+        state.measures = Object.keys(result.column_details).filter(k => result.column_details[k].type === 'numeric');
 
-    } catch (error) {
-        resultsArea.innerHTML = `<div class="card error-card"><h2>Error</h2><p>${error.message}</p><button class="run-button" onclick="location.reload()">Try Again</button></div>`;
-    } finally {
+        // Transition to the main workspace view
+        initialSetupContainer.classList.add('hidden');
         spinner.classList.add('hidden');
-        resultsArea.classList.remove('hidden');
+        workspace.classList.remove('hidden');
+
+        // Build the dynamic parts of the workspace
+        buildDataSchemaPanel();
+        if (result.shap_summary) {
+            addShapReportCard(result.shap_summary);
+        }
+    } catch (error) {
+        alert(`Error: ${error.message}`);
+        location.reload(); // Reload on failure
     }
 }
 
+// ==============================================================================
+// Workspace & Dashboard Building
+// ==============================================================================
+function buildDataSchemaPanel() {
+    const dimensionsUl = document.querySelector('#dimensions-list ul');
+    const measuresUl = document.querySelector('#measures-list ul');
+    dimensionsUl.innerHTML = '';
+    measuresUl.innerHTML = '';
 
-function renderSupervisedReport(result) {
-    // This function is the same as the one that worked before.
-    const { metrics, shap_summary } = result;
-    const accuracy = metrics.accuracy;
-    const report = metrics.classification_report;
-    const recall = report['1'] ? report['1'].recall : 0;
-    
-    let insights = [`Model achieved a <strong>decent accuracy of ${(accuracy * 100).toFixed(1)}%</strong>.`, `It correctly identified <strong>${(recall * 100).toFixed(0)}% of the target cases</strong> (Recall).`];
-    let recommendations = [`Focus on improving factors like <strong>"${Object.keys(shap_summary)[0]}"</strong> and <strong>"${Object.keys(shap_summary)[1]}"</strong> as they are the strongest predictors.`];
-
-    resultsArea.innerHTML = `
-        <div class="card"><h2>Predictive Model Report</h2><div class="metric-grid"><div class="metric"><h3>${(accuracy * 100).toFixed(1)}%</h3><p>Overall Accuracy</p></div><div class="metric"><h3>${(recall * 100).toFixed(1)}%</h3><p>Target Recall</p></div></div></div>
-        <div class="card insight-card"><h2>Key Insights</h2><ul>${insights.map(i => `<li>${i}</li>`).join('')}</ul></div>
-        <div class="card insight-card"><h2>Actionable Recommendations</h2><ul>${recommendations.map(r => `<li>${r}</li>`).join('')}</ul></div>
-        <div class="card"><h2>Feature Importance Analysis</h2><div id="plot-div"></div></div>
-        <button class="run-button" onclick="location.reload()" style="margin-top: 1.5rem;">Start New Analysis</button>
-    `;
-
-    Plotly.newPlot('plot-div', [{ type: 'bar', x: Object.values(shap_summary), y: Object.keys(shap_summary), orientation: 'h', marker: { color: '#1e90ff' } }],
-        { paper_bgcolor: '#1e1e1e', plot_bgcolor: '#1e1e1e', font: { color: '#e0e0e0' }, yaxis: { autorange: 'reversed' }, height: 300 + Object.keys(shap_summary).length * 20, margin: { l: 250 } });
+    state.dimensions.forEach(dim => {
+        dimensionsUl.innerHTML += `<li><i class="fa-solid fa-font"></i>${dim}</li>`;
+    });
+    state.measures.forEach(measure => {
+        measuresUl.innerHTML += `<li><i class="fa-solid fa-hashtag"></i>${measure}</li>`;
+    });
 }
 
-function renderUnsupervisedReport(result) {
-     // This function is also the same as the one that worked before.
-     resultsArea.innerHTML = `<div class="card"><pre>Unsupervised results would go here.</pre><button class="run-button" onclick="location.reload()" style="margin-top: 1.5rem;">Start New Analysis</button></div>`
+function createDashboardCard(innerHTML, customClass = '') {
+    const card = document.createElement('div');
+    card.className = `analysis-card ${customClass}`;
+    card.innerHTML = innerHTML;
+    return card;
 }
 
-
-function renderQueryInterface() {
-    // This function is the same as the one that worked before.
-    queryArea.classList.remove('hidden');
-    queryArea.innerHTML = `
-        <div class="card">
-            <h2>Test the Model on a New Case</h2>
-            <div class="query-form" id="query-form-inputs"></div>
-            <button class="run-button" id="query-btn">Get Prediction</button>
-            <div id="query-result"></div>
+function addShapReportCard(shapSummary) {
+    const plotId = `plot-shap-${Date.now()}`;
+    const cardHTML = `
+        <div class="card-header">
+            <h2>Initial Feature Importance</h2>
+            <div class="card-controls">
+                <button onclick="this.closest('.analysis-card').remove()">✖</button>
+            </div>
         </div>
-    `;
+        <div class="plot-container" id="${plotId}"></div>`;
+    const card = createDashboardCard(cardHTML);
+    dashboardGrid.appendChild(card);
+    Plotly.newPlot(plotId, [{
+        type: 'bar',
+        x: Object.values(shapSummary),
+        y: Object.keys(shapSummary),
+        orientation: 'h',
+        marker: { color: '#1e90ff' }
+    }], {
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        font: { color: '#e0e0e0' },
+        yaxis: { autorange: 'reversed' },
+        margin: { l: 200, t: 30, b: 30, r: 20 }
+    }, { responsive: true });
+}
 
-    const formInputs = document.getElementById('query-form-inputs');
-    state.columns.forEach(col => {
-        if (col !== state.target) {
-            formInputs.innerHTML += `
-                <div class="form-group">
-                    <label for="query-${col}">${col}</label>
-                    <input type="text" id="query-${col}" placeholder="Enter value for ${col}">
+// --- KPI Card Logic ---
+function openKpiModal() {
+    const measureSelect = document.getElementById('kpi-measure-select');
+    measureSelect.innerHTML = state.measures.map(m => `<option value="${m}">${m}</option>`).join('');
+    kpiModalOverlay.classList.remove('hidden');
+}
+
+async function addKpiCardToDashboard() {
+    const column = document.getElementById('kpi-measure-select').value;
+    const aggregation = document.getElementById('kpi-agg-select').value;
+    kpiModalOverlay.classList.add('hidden');
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/kpi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ column, aggregation }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail);
+        
+        const cardHTML = `
+            <div class="card-controls" style="text-align: right;">
+                <button onclick="this.closest('.analysis-card').remove()">✖</button>
+            </div>
+            <div class="kpi-card-content">
+                <h3 class="kpi-value">${result.kpi_value}</h3>
+                <p class="kpi-title">${result.title}</p>
+            </div>`;
+        const card = createDashboardCard(cardHTML);
+        dashboardGrid.appendChild(card);
+    } catch (error) {
+        alert(`Failed to create KPI card: ${error.message}`);
+    }
+}
+
+// --- Charting Logic ---
+function openPlotModal() {
+    renderPlotOptions();
+    plotModalOverlay.classList.remove('hidden');
+}
+
+function renderPlotOptions() {
+    const plotType = document.getElementById('plot-type-select').value;
+    const container = document.getElementById('plot-options-container');
+    const { measures, dimensions } = state;
+
+    let html = '';
+    if (plotType === 'histogram') {
+        html = `<div class="form-group"><label for="plot-col1">Select Measure:</label><select id="plot-col1">${measures.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>`;
+    } else if (plotType === 'scatterplot') {
+        html = `<div class="form-group"><label for="plot-col1">X-Axis (Measure):</label><select id="plot-col1">${measures.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                <div class="form-group"><label for="plot-col2">Y-Axis (Measure):</label><select id="plot-col2">${measures.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                <div class="form-group"><label for="plot-col3">Color By (Dimension, Optional):</label><select id="plot-col3"><option value="">None</option>${dimensions.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>`;
+    } else if (plotType === 'boxplot') {
+        html = `<div class="form-group"><label for="plot-col1">Variable (Measure):</label><select id="plot-col1">${measures.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>
+                <div class="form-group"><label for="plot-col2">Group By (Dimension, Optional):</label><select id="plot-col2"><option value="">None</option>${dimensions.map(c => `<option value="${c}">${c}</option>`).join('')}</select></div>`;
+    }
+    container.innerHTML = html;
+}
+
+async function addPlotToDashboard() {
+    const plotType = document.getElementById('plot-type-select').value;
+    const col1 = document.getElementById('plot-col1').value;
+    const col2_el = document.getElementById('plot-col2');
+    const col3_el = document.getElementById('plot-col3');
+
+    const requestBody = {
+        plot_type: plotType,
+        col1: col1,
+        col2: col2_el ? col2_el.value : null,
+        col3: col3_el ? col3_el.value : null,
+    };
+    plotModalOverlay.classList.add('hidden');
+    
+    try {
+        const response = await fetch('http://127.0.0.1:8000/generate_plot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail);
+
+        const { plot_data, title, xaxis, yaxis } = result;
+        const plotId = `plot-${Date.now()}`;
+
+        const cardHTML = `
+            <div class="card-header">
+                <h2>${title}</h2>
+                <div class="card-controls">
+                    <button onclick="Plotly.downloadImage('${plotId}', {format: 'png', filename: '${title.replace(/ /g, '_')}'})">PNG</button>
+                    <button onclick="this.closest('.analysis-card').remove()">✖</button>
                 </div>
-            `;
-        }
-    });
+            </div>
+            <div class="plot-container" id="${plotId}"></div>`;
+        
+        const card = createDashboardCard(cardHTML);
+        dashboardGrid.appendChild(card);
 
-    document.getElementById('query-btn').addEventListener('click', () => {
-        alert("This feature is ready to be connected to a new '/predict_single' backend endpoint.");
-    });
+        const layout = {
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', font: { color: '#e0e0e0' },
+            margin: { l: 50, r: 20, t: 40, b: 50 },
+            xaxis: { title: xaxis || '', gridcolor: '#444' },
+            yaxis: { title: yaxis || '', gridcolor: '#444' },
+            showlegend: plot_data.length > 1,
+            legend: { x: 1, xanchor: 'right', y: 1 }
+        };
+        
+        Plotly.newPlot(plotId, plot_data, layout, { responsive: true });
+    } catch (error) {
+        alert(`Failed to create plot: ${error.message}`);
+    }
 }

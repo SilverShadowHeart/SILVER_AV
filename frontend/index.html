@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SILVER AV - Automated Analytics</title>
+    <title>SILVER AV - Interactive Analysis</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Icon library (Font Awesome) for data type indicators in the schema panel -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="container">
+    <!-- This container holds the initial upload and setup screen -->
+    <div id="initial-setup-container">
         <header>
             <h1>SILVER AV 🔮</h1>
             <p class="subtitle">Interactive Data Science Platform</p>
@@ -18,30 +21,98 @@
                 <h2>1. Upload Your Data</h2>
                 <div class="file-upload-area" id="drop-area">
                     <input type="file" id="file-input" accept=".csv" hidden>
-                    <label for="file-input" id="file-label">
-                        <p>Drag & Drop a CSV file here, or Click to Select</p>
-                    </label>
+                    <label for="file-input" id="file-label"><p>Drag & Drop CSV or Click to Select</p></label>
                 </div>
                 <p id="file-name"></p>
             </div>
             <div class="card hidden" id="options-panel">
-                <!-- Options will be injected here -->
+                <!-- Analysis options will be injected here by script.js -->
             </div>
-            <button class="run-button hidden" id="run-analysis-btn">Run Analysis</button>
+            <button class="run-button hidden" id="run-analysis-btn">Build Workspace</button>
         </main>
-
         <div class="spinner-container hidden" id="spinner">
-             <div class="spinner"></div><p>Running analysis...</p>
+             <div class="spinner"></div><p>Building your workspace...</p>
         </div>
+    </div>
 
-        <div class="results-container hidden" id="results-area">
-            <!-- Main results will be injected here -->
-        </div>
+    <!-- This is the main BI Workspace, hidden until analysis is complete -->
+    <div class="workspace-container hidden" id="workspace">
+        <!-- Panel 1: Data Schema (Left Sidebar) -->
+        <aside class="data-schema-panel" id="data-schema-panel">
+            <div class="panel-header">
+                <h3>Data Schema</h3>
+            </div>
+            <div id="dimensions-list">
+                <h4>Dimensions</h4>
+                <ul><!-- Populated by script.js --></ul>
+            </div>
+            <div id="measures-list">
+                <h4>Measures</h4>
+                <ul><!-- Populated by script.js --></ul>
+            </div>
+        </aside>
 
-        <!-- NEW: Query section will be injected here after analysis -->
-        <div class="query-container hidden" id="query-area"></div>
+        <!-- Panel 2: Dashboard Canvas (Main Content Area) -->
+        <main class="dashboard-canvas" id="dashboard-canvas">
+            <div class="canvas-header">
+                <h2>My Dashboard</h2>
+                <div class="hub-controls">
+                    <button class="hub-button" id="add-kpi-btn">📈 Add KPI Card</button>
+                    <button class="hub-button" id="add-plot-btn">📊 Add Chart</button>
+                </div>
+            </div>
+            <div class="dashboard-grid" id="dashboard-grid">
+                <!-- All analysis cards (KPIs, charts) will be dynamically added here -->
+            </div>
+        </main>
     </div>
     
+    <!-- Modal for Creating Charts -->
+    <div class="modal-overlay hidden" id="plot-modal-overlay">
+        <div class="modal-content">
+            <h3>Create a New Chart</h3>
+            <div class="form-group">
+                <label for="plot-type-select">Chart Type:</label>
+                <select id="plot-type-select">
+                    <option value="histogram">Histogram (Distribution)</option>
+                    <option value="scatterplot">Scatter Plot (Relationship)</option>
+                    <option value="boxplot">Box Plot (Summary)</option>
+                </select>
+            </div>
+            <div id="plot-options-container">
+                <!-- Dynamic form fields for plot options will be injected here -->
+            </div>
+            <div class="modal-actions">
+                <button class="run-button" id="create-plot-btn">Create Chart</button>
+                <button class="cancel-button" onclick="document.getElementById('plot-modal-overlay').classList.add('hidden')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Creating KPI Cards -->
+    <div class="modal-overlay hidden" id="kpi-modal-overlay">
+        <div class="modal-content">
+            <h3>Create a New KPI Card</h3>
+            <div class="form-group">
+                <label for="kpi-measure-select">Select Measure:</label>
+                <select id="kpi-measure-select"><!-- Populated by script.js --></select>
+            </div>
+            <div class="form-group">
+                <label for="kpi-agg-select">Select Calculation:</label>
+                <select id="kpi-agg-select">
+                    <option value="sum">Sum</option>
+                    <option value="average">Average</option>
+                    <option value="count">Count</option>
+                    <option value="unique_count">Count Unique</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="run-button" id="create-kpi-btn">Create KPI</button>
+                <button class="cancel-button" onclick="document.getElementById('kpi-modal-overlay').classList.add('hidden')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
     <script src="script.js"></script>
 </body>

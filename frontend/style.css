@@ -1,186 +1,224 @@
-/* Basic Setup */
+/* File: frontend/style.css */
+
+/* --- Basic Setup & Typography --- */
+:root {
+    --bg-main: #121212;         /* Main background (very dark) */
+    --bg-panel: #1a1a1a;        /* Sidebar background */
+    --bg-card: #212121;         /* Card background */
+    --border-color: #333333;    /* Borders for cards and panels */
+    --text-primary: #e0e0e0;    /* Primary text color */
+    --text-secondary: #aaaaaa;  /* Dimmer text for labels/subtitles */
+    --accent-color: #007bff;    /* A cleaner blue accent */
+    --measure-color: #20c997;   /* Green for measures */
+    --dimension-color: #007bff; /* Blue for dimensions */
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: #121212;
-    color: #e0e0e0;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
     margin: 0;
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
+    padding: 0;
+    overflow: hidden; /* Prevent body scroll when workspace is active */
 }
 
-.container {
-    max-width: 900px;
-    width: 100%;
+h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+p.subtitle { font-size: 1.2rem; color: var(--text-secondary); }
+.hidden { display: none !important; }
+
+/* --- Initial Setup Screen --- */
+#initial-setup-container {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box;
 }
+#control-panel { max-width: 600px; width: 100%; display: flex; flex-direction: column; gap: 1.5rem; }
+header { text-align: center; margin-bottom: 2rem; }
 
-header {
-    text-align: center;
-}
-
-h1 {
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.subtitle {
-    font-size: 1.2rem;
-    color: #888;
-}
-
-/* Cards and Panels */
+/* --- General Components (Cards, Buttons, Inputs) --- */
 .card {
-    background-color: #1e1e1e;
-    border: 1px solid #333;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1.5rem;
 }
-
-h2 {
-    margin-top: 0;
-    border-bottom: 1px solid #444;
-    padding-bottom: 0.5rem;
-}
-
-/* File Upload Area */
-.file-upload-area {
-    border: 2px dashed #444;
-    border-radius: 8px;
-    padding: 2rem;
-    text-align: center;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
-}
-.file-upload-area.highlight {
-    background-color: #2a2a2a;
-    border-color: #1e90ff;
-}
-#file-input {
-    display: none;
-}
-.file-label {
-    background-color: #1e90ff;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-    cursor: pointer;
-    display: inline-block;
-    margin-top: 1rem;
-}
-#file-name {
-    text-align: center;
-    margin-top: 1rem;
-    color: #1e90ff;
-    font-weight: bold;
-}
-
-/* Mode Selector */
-.mode-selector {
-    display: flex;
-    gap: 1rem;
-}
-.mode-card {
-    flex: 1;
-    padding: 1rem;
-    border: 2px solid #444;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.mode-card:hover {
-    background-color: #2a2a2a;
-}
-.mode-card.selected {
-    border-color: #1e90ff;
-    box-shadow: 0 0 10px rgba(30, 144, 255, 0.5);
-}
-#target-selector-div {
-    margin-top: 1.5rem;
-}
-select {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #2a2a2a;
-    border: 1px solid #444;
-    color: #e0e0e0;
-    border-radius: 5px;
-    font-size: 1rem;
-}
-
-/* Buttons and Controls */
 .run-button {
-    width: 100%;
-    padding: 1rem;
-    font-size: 1.2rem;
-    font-weight: bold;
-    background-color: #1e90ff;
+    padding: 0.8rem 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    background-color: var(--accent-color);
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
-.run-button:disabled {
-    background-color: #333;
-    cursor: not-allowed;
-}
-.run-button:not(:disabled):hover {
-    background-color: #0073e6;
+.run-button:hover { background-color: #0056b3; }
+.form-group label { margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); }
+select {
+    width: 100%; padding: 0.75rem; background-color: #2a2a2a;
+    border: 1px solid var(--border-color); color: var(--text-primary);
+    border-radius: 5px; font-size: 1rem; box-sizing: border-box;
 }
 
-/* Spinner */
-.spinner-container {
-    text-align: center;
+/* --- BI Workspace Layout --- */
+.workspace-container {
+    display: grid;
+    grid-template-columns: 260px 1fr; /* Sidebar and main content */
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
+
+/* --- Data Schema Panel (Left Sidebar) --- */
+.data-schema-panel {
+    background-color: var(--bg-panel);
+    padding: 1rem;
+    border-right: 1px solid var(--border-color);
+    overflow-y: auto;
+}
+.panel-header {
+    color: var(--text-primary);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+#dimensions-list h4, #measures-list h4 {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 1.5rem 0 0.5rem 0;
+}
+.data-schema-panel ul { list-style: none; padding: 0; }
+.data-schema-panel li {
+    padding: 0.5rem; border-radius: 4px; display: flex;
+    align-items: center; gap: 0.75rem; font-size: 0.9rem;
+}
+.data-schema-panel li i {
+    width: 14px; text-align: center; font-weight: 900;
+    font-style: normal; font-family: 'Consolas', 'Courier New', monospace;
+}
+.data-schema-panel .dimension-icon { color: var(--dimension-color); }
+.data-schema-panel .measure-icon { color: var(--measure-color); }
+
+/* --- Dashboard Canvas (Main Area) --- */
+.dashboard-canvas { padding: 1.5rem; overflow-y: auto; background-color: var(--bg-main); }
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.canvas-header h2 { margin: 0; border: none; padding: 0; font-size: 1.5rem; }
+.hub-controls { display: flex; gap: 0.75rem; }
+.hub-button {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+.hub-button:hover { background-color: var(--accent-color); border-color: var(--accent-color); }
+.hub-button i { margin-right: 0.5rem; }
+
+/* Dashboard Grid & Cards */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+.analysis-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 150px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.analysis-card.full-width {
+    grid-column: 1 / -1; /* Make this card span the full width */
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+.card-header h2 { font-size: 1rem; margin: 0; border: none; padding: 0; color: var(--text-primary); }
+.card-controls button {
+    background: none; border: none; color: var(--text-secondary);
+    cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0.2rem;
+}
+.card-controls button:hover { color: white; }
+
+/* KPI Card Specific Styles */
+.kpi-card-content {
+    flex-grow: 1; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+}
+.kpi-value {
+    font-size: 3rem;
+    font-weight: 500;
+    color: var(--accent-color);
+    margin: 0;
+}
+.kpi-title { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+/* --- Modal Styles --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+    display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal-content {
+    background: var(--bg-card);
+    padding: 2rem; border-radius: 8px; width: 90%; max-width: 500px;
+    border: 1px solid var(--border-color);
+}
+.modal-actions {
+    margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;
+}
+.modal-actions .run-button { width: auto; font-size: 1rem; padding: 0.6rem 1.2rem; }
+.cancel-button {
+    background-color: #444; padding: 0.6rem 1.2rem; border-radius: 5px;
+    border: none; color: white; cursor: pointer; font-size: 1rem;
+}
+.cancel-button:hover { background-color: #555; }
+
+/* File Upload Area (Refined) */
+.file-upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.file-upload-area:hover { border-color: var(--accent-color); background-color: rgba(0,123,255,0.05); }
+
+/* Spinner (No change needed) */
+.spinner-container { text-align: center; }
 .spinner {
     border: 5px solid #333;
-    border-top: 5px solid #1e90ff;
+    border-top: 5px solid var(--accent-color);
     border-radius: 50%;
     width: 50px;
     height: 50px;
     animation: spin 1s linear infinite;
     margin: 2rem auto;
 }
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Results Area */
-.results-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-.insight-card {
-    background-color: #2a2a2a;
-    padding: 1rem;
-    border-left: 5px solid #1e90ff;
-}
-.metric-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    text-align: center;
-}
-.metric h3 { margin: 0; font-size: 2rem; color: #1e90ff;}
-.metric p { margin: 0; color: #888; }
-#shap-plot img {
-    max-width: 100%;
-    background-color: white; /* SHAP plots often have white backgrounds */
-    border-radius: 5px;
-}
-.error-card {
-    background-color: #4d1c1c;
-    border-left-color: #ff4d4f;
-    padding: 1.5rem;
-    border-radius: 8px;
-}
-
-/* Utility */
-.hidden {
-    display: none !important;
-}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
