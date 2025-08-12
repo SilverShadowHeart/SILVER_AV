@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SILVER AV - Automated Analytics</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SILVER AV 🔮</h1>
+            <p class="subtitle">Interactive Data Science Platform</p>
+        </header>
+
+        <main id="control-panel">
+            <div class="card">
+                <h2>1. Upload Your Data</h2>
+                <div class="file-upload-area" id="drop-area">
+                    <input type="file" id="file-input" accept=".csv" hidden>
+                    <label for="file-input" id="file-label">
+                        <p>Drag & Drop a CSV file here, or Click to Select</p>
+                    </label>
+                </div>
+                <p id="file-name"></p>
+            </div>
+            <div class="card hidden" id="options-panel">
+                <!-- Options will be injected here -->
+            </div>
+            <button class="run-button hidden" id="run-analysis-btn">Run Analysis</button>
+        </main>
+
+        <div class="spinner-container hidden" id="spinner">
+             <div class="spinner"></div><p>Running analysis...</p>
+        </div>
+
+        <div class="results-container hidden" id="results-area">
+            <!-- Main results will be injected here -->
+        </div>
+
+        <!-- NEW: Query section will be injected here after analysis -->
+        <div class="query-container hidden" id="query-area"></div>
+    </div>
+    
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
+    <script src="script.js"></script>
+</body>
+</html>

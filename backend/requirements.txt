@@ -1,0 +1,13 @@
+# Core Web Framework
+fastapi
+uvicorn[standard]
+
+# Data Handling and Machine Learning
+pandas
+numpy
+scikit-learn
+xgboost
+shap
+
+# For handling file uploads from the frontend
+python-multipart

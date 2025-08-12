@@ -1,0 +1,186 @@
+/* Basic Setup */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    max-width: 900px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+header {
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #888;
+}
+
+/* Cards and Panels */
+.card {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+h2 {
+    margin-top: 0;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.5rem;
+}
+
+/* File Upload Area */
+.file-upload-area {
+    border: 2px dashed #444;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+.file-upload-area.highlight {
+    background-color: #2a2a2a;
+    border-color: #1e90ff;
+}
+#file-input {
+    display: none;
+}
+.file-label {
+    background-color: #1e90ff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 1rem;
+}
+#file-name {
+    text-align: center;
+    margin-top: 1rem;
+    color: #1e90ff;
+    font-weight: bold;
+}
+
+/* Mode Selector */
+.mode-selector {
+    display: flex;
+    gap: 1rem;
+}
+.mode-card {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid #444;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mode-card:hover {
+    background-color: #2a2a2a;
+}
+.mode-card.selected {
+    border-color: #1e90ff;
+    box-shadow: 0 0 10px rgba(30, 144, 255, 0.5);
+}
+#target-selector-div {
+    margin-top: 1.5rem;
+}
+select {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    color: #e0e0e0;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* Buttons and Controls */
+.run-button {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    background-color: #1e90ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.run-button:disabled {
+    background-color: #333;
+    cursor: not-allowed;
+}
+.run-button:not(:disabled):hover {
+    background-color: #0073e6;
+}
+
+/* Spinner */
+.spinner-container {
+    text-align: center;
+}
+.spinner {
+    border: 5px solid #333;
+    border-top: 5px solid #1e90ff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Results Area */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.insight-card {
+    background-color: #2a2a2a;
+    padding: 1rem;
+    border-left: 5px solid #1e90ff;
+}
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    text-align: center;
+}
+.metric h3 { margin: 0; font-size: 2rem; color: #1e90ff;}
+.metric p { margin: 0; color: #888; }
+#shap-plot img {
+    max-width: 100%;
+    background-color: white; /* SHAP plots often have white backgrounds */
+    border-radius: 5px;
+}
+.error-card {
+    background-color: #4d1c1c;
+    border-left-color: #ff4d4f;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+/* Utility */
+.hidden {
+    display: none !important;
+}

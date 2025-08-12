@@ -1,0 +1,54 @@
+
+====================
+CLUSTER 0 (Size: 1526)
+====================
+--- Average Numeric Features ---
+SeniorCitizen       0.034076
+tenure             30.547182
+MonthlyCharges     21.079194
+TotalCharges      665.220329
+cluster             0.000000
+
+--- Most Common Categorical Features ---
+gender                             Male
+Partner                              No
+Dependents                           No
+PhoneService                        Yes
+MultipleLines                        No
+InternetService                      No
+OnlineSecurity      No internet service
+OnlineBackup        No internet service
+DeviceProtection    No internet service
+TechSupport         No internet service
+StreamingTV         No internet service
+StreamingMovies     No internet service
+Contract                       Two year
+PaperlessBilling                     No
+PaymentMethod              Mailed check
+
+====================
+CLUSTER 1 (Size: 5517)
+====================
+--- Average Numeric Features ---
+SeniorCitizen        0.197571
+tenure              32.875657
+MonthlyCharges      76.844254
+TotalCharges      2729.505406
+cluster              1.000000
+
+--- Most Common Categorical Features ---
+gender                          Male
+Partner                           No
+Dependents                        No
+PhoneService                     Yes
+MultipleLines                    Yes
+InternetService          Fiber optic
+OnlineSecurity                    No
+OnlineBackup                      No
+DeviceProtection                  No
+TechSupport                       No
+StreamingTV                       No
+StreamingMovies                   No
+Contract              Month-to-month
+PaperlessBilling                 Yes
+PaymentMethod       Electronic check
