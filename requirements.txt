@@ -1,0 +1,10 @@
+# Data Handling and Machine Learning
+pandas
+numpy
+scikit-learn
+xgboost
+shap
+
+# Plotting
+matplotlib
+seaborn
